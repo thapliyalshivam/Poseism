@@ -6,15 +6,25 @@ SimpleOpenNI kinect;
 int width = 1000;
 int height = 1000;
 int theme_mode = 0;
+PFont f;  
 String base = "../../visuals/";
 ArrayList<Theme> themes;
 
 PVector R_H_joint = new PVector();
 PVector L_H_joint = new PVector();
+PVector R_S_joint = new PVector();
+PVector L_S_joint = new PVector();
 PVector R_hand = new PVector();
 PVector L_hand = new PVector();
- float R_confidence;
-  float L_confidence;
+PVector R_shoulder = new PVector();
+PVector L_shoulder = new PVector();
+float R_confidence;
+float L_confidence;
+float scaler_L_X = 0.0;
+float scaler_L_Y = 0.0;
+float scaler_R_X = 0.0;
+float scaler_R_Y = 0.0;
+int Width = 1;
 
 class ImageClass{
   String imgurl;
@@ -51,7 +61,8 @@ class Theme{
 }
 
 void setup() {
-  
+ f = createFont("Arial",16,true);
+   textFont(f,200); 
 themes = new ArrayList<Theme>();
   
 ArrayList<ImageClass> imagelist1;
@@ -71,16 +82,20 @@ themes.add(new Theme(imagelist2,"sads"));
  kinect.enableDepth();
  kinect.enableUser();// this change
  size(1000, 1000);
- fill(255, 0, 0);
- 
+ fill(0, 0, 0);
  
 }
 
 void draw() {
-  
+ background(255);
 themes.get(0).imglist.get(1).draw(R_hand.x);
 themes.get(0).imglist.get(0).draw(R_hand.y);
-  
+text(
+scaler_L_X+",\n "+
+scaler_L_Y+",\n "+
+scaler_R_X+",\n "+
+scaler_R_Y+",\n "
+,10,200);  
   kinect.update();
   //image(kinect.depthImage(), 0, 0);
   IntVector userList = new IntVector();
@@ -96,18 +111,35 @@ themes.get(0).imglist.get(0).draw(R_hand.y);
 
 
 
+void calcWidth(PVector x, PVector y){
+  width = (int)sqrt((x.x*x.y)+(y.x+y.y));
+
+} 
 
 
 
 void skeletonData(int userId) {
-
-  R_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, R_H_joint);
-  L_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, L_H_joint);
- if(L_confidence < 0.5 && R_confidence < 0.5 ){
+R_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, R_H_joint);
+L_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, L_H_joint);
+ kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, R_S_joint);
+kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, L_S_joint);
+if(L_confidence < 0.5 && R_confidence < 0.5 ){
    return;
  }
  kinect.convertRealWorldToProjective(R_H_joint, R_hand);
  kinect.convertRealWorldToProjective(L_H_joint, L_hand);
+ kinect.convertRealWorldToProjective(R_S_joint, R_shoulder);
+ kinect.convertRealWorldToProjective(L_S_joint, L_shoulder);
+ 
+
+ calcWidth(L_shoulder,R_shoulder);
+
+scaler_L_X = (L_hand.x - L_shoulder.x)/width;
+scaler_L_Y = (L_hand.x - L_shoulder.x)/width;
+scaler_R_X = (R_hand.x - R_shoulder.x)/width;
+scaler_R_Y = (R_hand.y - R_shoulder.y)/width;
+ 
+ 
 
 }
 
