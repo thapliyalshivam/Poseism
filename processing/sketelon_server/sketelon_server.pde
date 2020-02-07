@@ -3,9 +3,9 @@ SimpleOpenNI kinect;
 
 
 //config
-int width = 1000;
-int height = 1000;
-int theme_mode = 0;
+int width = 1920;
+int height = 1080;
+
 PFont f;  
 String base = "../../visuals/";
 ArrayList<Theme> themes;
@@ -24,7 +24,12 @@ float scaler_L_X = 0.0;
 float scaler_L_Y = 0.0;
 float scaler_R_X = 0.0;
 float scaler_R_Y = 0.0;
-int Width = 1;
+float scaler_bias = 1.0;
+int shoulder_width = 1;
+int i = 0;
+float width_bias = 1.0;
+int theme_mode = 1;
+
 
 class ImageClass{
   String imgurl;
@@ -32,20 +37,26 @@ class ImageClass{
   int posX;
   int posY;
   float scale;
+  float scale_sensitivity;
+  float rot_sensitivity;
   int rotate;
-  ImageClass(String imgurl, int posX, int posY, float scale, int rotate){
+  
+  ImageClass(String imgurl, int posX, int posY, float scale, int rotate, float scale_sensitivity, float rot_sensitivity){
   this.imgurl=imgurl;
   this.img = loadImage(base+imgurl);
+  this.scale_sensitivity = scale_sensitivity;
+  this.rot_sensitivity= rot_sensitivity;
   this.posX=posX;
   this.posY=posY;
   this.scale=scale;
   this.rotate=rotate;
   }
   
-  void draw(float off_x){
-  scale(this.scale); 
-  rotate(radians(this.rotate));
-  image(this.img,this.posX+off_x,this.posY);
+  void draw(){
+  translate(this.posX+450, this.posY+450);
+  scale(this.scale+(scaler_L_X*this.scale_sensitivity)); 
+  rotate(radians(this.rotate+scaler_R_Y*this.rot_sensitivity));
+  image(this.img,this.posX-450,this.posY-450);
   resetMatrix();
 
   }
@@ -67,35 +78,36 @@ themes = new ArrayList<Theme>();
   
 ArrayList<ImageClass> imagelist1;
 imagelist1 = new ArrayList<ImageClass>();
-imagelist1.add(new ImageClass("theme_1/a1.png",200,200,0.1,45));
-imagelist1.add(new ImageClass("theme_1/a2.png",0,0,1,0));
+imagelist1.add(new ImageClass("theme_1/a2.png",0,0,0.1,0, 0.2,30));
+imagelist1.add(new ImageClass("theme_1/a1.png",400,40,0.2,45, 0.2,20));
+//imagelist1.add(new ImageClass("theme_1/a2.png",0,0,1,0, 1/20));
+//imagelist1.add(new ImageClass("theme_1/a3.png",0,0,1,0, 1/10));
 themes.add(new Theme(imagelist1,"sads"));
 
 ArrayList<ImageClass> imagelist2;
 imagelist2 = new ArrayList<ImageClass>();
-imagelist2.add(new ImageClass("theme_1/a1.png",0,0,1,0));
-imagelist2.add(new ImageClass("theme_1/a2.png",0,0,1,0));
+
+imagelist2.add(new ImageClass("theme_1/a1.png",400,40,0.2,45, 0.2,20));
 themes.add(new Theme(imagelist2,"sads"));
 
 
  kinect = new SimpleOpenNI(this);
  kinect.enableDepth();
  kinect.enableUser();// this change
- size(1000, 1000);
+ size(1920, 1080);
  fill(0, 0, 0);
  
 }
 
 void draw() {
  background(255);
-themes.get(0).imglist.get(1).draw(R_hand.x);
-themes.get(0).imglist.get(0).draw(R_hand.y);
-text(
-scaler_L_X+",\n "+
-scaler_L_Y+",\n "+
-scaler_R_X+",\n "+
-scaler_R_Y+",\n "
-,10,200);  
+for(i=0;i<themes.get(theme_mode).imglist.size();++i)
+{
+themes.get(theme_mode).imglist.get(i).draw();
+}
+ 
+  
+  
   kinect.update();
   //image(kinect.depthImage(), 0, 0);
   IntVector userList = new IntVector();
@@ -112,15 +124,15 @@ scaler_R_Y+",\n "
 
 
 void calcWidth(PVector x, PVector y){
-  width = (int)sqrt((x.x*x.y)+(y.x+y.y));
-
+  shoulder_width = (int)sqrt((x.x*x.y)+(y.x+y.y));
+  width_bias = shoulder_width/scaler_bias;
 } 
 
 
 
 void skeletonData(int userId) {
 R_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, R_H_joint);
-L_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, L_H_joint);
+L_confidence = kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HAND, L_H_joint);
  kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, R_S_joint);
 kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, L_S_joint);
 if(L_confidence < 0.5 && R_confidence < 0.5 ){
@@ -134,10 +146,10 @@ if(L_confidence < 0.5 && R_confidence < 0.5 ){
 
  calcWidth(L_shoulder,R_shoulder);
 
-scaler_L_X = (L_hand.x - L_shoulder.x)/width;
-scaler_L_Y = (L_hand.x - L_shoulder.x)/width;
-scaler_R_X = (R_hand.x - R_shoulder.x)/width;
-scaler_R_Y = (R_hand.y - R_shoulder.y)/width;
+scaler_L_X = (L_hand.x - L_shoulder.x)/width_bias;
+scaler_L_Y = (L_hand.y - L_shoulder.y)/width_bias;
+scaler_R_X = (R_hand.x - R_shoulder.x)/width_bias;
+scaler_R_Y = (R_hand.y - R_shoulder.y)/width_bias;
  
  
 
