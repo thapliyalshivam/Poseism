@@ -28,7 +28,7 @@ float scaler_bias = 1.0;
 int shoulder_width = 1;
 int i = 0;
 float width_bias = 1.0;
-int theme_mode = 1;
+int theme_mode = 0;
 
 
 class ImageClass{
@@ -40,14 +40,16 @@ class ImageClass{
   float scale_sensitivity;
   float rot_sensitivity;
   int rotate;
+  int pos_off;
   
-  ImageClass(String imgurl, int posX, int posY, float scale, int rotate, float scale_sensitivity, float rot_sensitivity){
+  ImageClass(String imgurl, int posX, int posY, float scale, int rotate, float scale_sensitivity, float rot_sensitivity, int pos_off){
   this.imgurl=imgurl;
   this.img = loadImage(base+imgurl);
   this.scale_sensitivity = scale_sensitivity;
   this.rot_sensitivity= rot_sensitivity;
   this.posX=posX;
   this.posY=posY;
+  this.pos_off=pos_off;
   this.scale=scale;
   this.rotate=rotate;
   }
@@ -56,7 +58,7 @@ class ImageClass{
   translate(this.posX+450, this.posY+450);
   scale(this.scale+(scaler_L_X*this.scale_sensitivity)); 
   rotate(radians(this.rotate+scaler_R_Y*this.rot_sensitivity));
-  image(this.img,this.posX-450,this.posY-450);
+  image(this.img,this.posX-450+(scaler_L_Y*pos_off),this.posY-450+(scaler_R_X*pos_off));
   resetMatrix();
 
   }
@@ -72,22 +74,24 @@ class Theme{
 }
 
 void setup() {
- f = createFont("Arial",16,true);
-   textFont(f,200); 
+ f = createFont("Futura",16,true);
+ textFont(f,180); 
 themes = new ArrayList<Theme>();
   
 ArrayList<ImageClass> imagelist1;
 imagelist1 = new ArrayList<ImageClass>();
-imagelist1.add(new ImageClass("theme_1/a2.png",0,0,0.1,0, 0.2,30));
-imagelist1.add(new ImageClass("theme_1/a1.png",400,40,0.2,45, 0.2,20));
-//imagelist1.add(new ImageClass("theme_1/a2.png",0,0,1,0, 1/20));
-//imagelist1.add(new ImageClass("theme_1/a3.png",0,0,1,0, 1/10));
-themes.add(new Theme(imagelist1,"sads"));
+imagelist1.add(new ImageClass("theme_1/a1.png",400,20,0.5,45, 0.2,20,100));
+imagelist1.add(new ImageClass("theme_1/a2.png",250,20,0.8,0, -0.2,30,90));
+imagelist1.add(new ImageClass("theme_1/a3.png",500,100,0.9,0, 0.2,-30,40));
+imagelist1.add(new ImageClass("theme_1/a4.png",750,100,0.4,0, 0.2,30,-100));
+imagelist1.add(new ImageClass("theme_1/a5.png",200,100,1,0, -0.2,30,-60));
+imagelist1.add(new ImageClass("theme_1/a6.png",0,0,0.89,0, -0.2,-30,40));
+themes.add(new Theme(imagelist1,"Motionism"));
 
 ArrayList<ImageClass> imagelist2;
 imagelist2 = new ArrayList<ImageClass>();
 
-imagelist2.add(new ImageClass("theme_1/a1.png",400,40,0.2,45, 0.2,20));
+imagelist2.add(new ImageClass("theme_1/a1.png",400,40,0.2,45, 0.2,20,100));
 themes.add(new Theme(imagelist2,"sads"));
 
 
@@ -100,12 +104,14 @@ themes.add(new Theme(imagelist2,"sads"));
 }
 
 void draw() {
- background(255);
+ background(63,210,249);
 for(i=0;i<themes.get(theme_mode).imglist.size();++i)
 {
 themes.get(theme_mode).imglist.get(i).draw();
 }
  
+fill( 255, 255, 255);
+ text(themes.get(theme_mode).name,500,570);
   
   
   kinect.update();
