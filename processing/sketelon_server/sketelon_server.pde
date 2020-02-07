@@ -104,14 +104,14 @@ themes.add(new Theme(imagelist2,"sads"));
 }
 
 void draw() {
- background(63,210,249);
+ background(116,193,217);
 for(i=0;i<themes.get(theme_mode).imglist.size();++i)
 {
 themes.get(theme_mode).imglist.get(i).draw();
 }
  
 fill( 255, 255, 255);
- text(themes.get(theme_mode).name,500,570);
+ text("Poseism",550,570);
   
   
   kinect.update();
