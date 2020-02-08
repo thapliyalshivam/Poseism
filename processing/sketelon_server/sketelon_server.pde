@@ -104,7 +104,9 @@ themes.add(new Theme(imagelist2,"sads"));
 }
 
 void draw() {
- background(116,193,217);
+  colorMode(HSB, 255);
+  
+ background(scaler_R_X*255,210,217);
 for(i=0;i<themes.get(theme_mode).imglist.size();++i)
 {
 themes.get(theme_mode).imglist.get(i).draw();
